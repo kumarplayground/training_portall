@@ -1,0 +1,79 @@
+:root{
+	--bg: #ffffff;
+	--primary: #0b69ff; /* vivid blue */
+	--primary-700: #0956d9;
+	--muted: #f2f6ff;
+	--text: #0b2340;
+	--accent: #e6f0ff;
+}
+
+html,body{height:100%}
+body{
+	font-family: system-ui, Arial, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+	margin:0;padding:0;
+	background: var(--bg);
+	color: var(--text);
+}
+
+/* layout */
+.container{max-width:1100px;margin:24px auto;padding:18px}
+
+/* headings */
+h1,h2{color:var(--primary)}
+
+/* buttons */
+button{
+	padding:8px 12px;
+	background:var(--primary);
+	color:#fff;
+	border:1px solid var(--primary-700);
+	border-radius:6px;
+	cursor:pointer;
+}
+button:hover{background:var(--primary-700)}
+
+/* inputs */
+input,textarea,select{display:block;margin:8px 0;padding:8px;border:1px solid #cbdcfb;border-radius:6px}
+
+/* table */
+table{width:100%;border-collapse:collapse;margin-top:12px}
+table th{background:var(--primary);color:#fff;padding:8px;text-align:left}
+table td{padding:8px;border-bottom:1px solid #e6eefc}
+table tr:nth-child(even){background:var(--accent)}
+
+/* links */
+a{color:var(--primary);text-decoration:none}
+
+/* small utilities */
+.muted{color:#6b7a90}
+
+/* auth/login layout */
+.auth-wrapper{display:flex;align-items:center;justify-content:center;min-height:72vh;padding:24px}
+.auth-card{background:linear-gradient(180deg, #fff, #fbfdff);border:1px solid #e6eefc;padding:28px;border-radius:10px;box-shadow:0 6px 18px rgba(11,105,255,0.08);width:100%;max-width:420px}
+.logo{display:block;margin:0 auto 12px;width:210px;height:110px}
+.auth-card h2{margin-top:0;text-align:center}
+.auth-card h2{margin-top:0}
+.auth-actions{display:flex;gap:8px;align-items:center}
+
+/* center form elements inside auth-card */
+.auth-card form{ text-align:center }
+.auth-card input, .auth-card textarea, .auth-card select{ width:92%; max-width:360px; margin:8px auto; display:block }
+.auth-card .auth-actions{ justify-content:center }
+
+
+
+/* centered layout for admin dashboard */
+.centered{
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	gap:12px;
+	padding:22px;
+}
+.centered h2, .centered h3{ text-align:center; color:var(--primary); margin:6px 0 }
+.centered > button{ margin:6px 0 }
+.centered form{ display:flex; flex-direction:column; align-items:center; width:100%; max-width:720px }
+.centered form input, .centered form textarea, .centered form select{ width:92%; max-width:520px; margin:6px 0; display:block }
+.centered table{ max-width:1100px; width:100%; margin-top:12px }
+
+
