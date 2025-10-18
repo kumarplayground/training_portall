@@ -1,10 +1,33 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
+import { 
+  MdDashboard, 
+  MdLogout, 
+  MdPerson, 
+  MdEdit, 
+  MdDelete,
+  MdAdd,
+  MdSave,
+  MdCancel,
+  MdBusiness,
+  MdPhone,
+  MdEmail,
+  MdLocationOn,
+  MdSchool,
+  MdWork,
+  MdCalendarToday,
+  MdAssignment,
+  MdMenu,
+  MdClose
+} from 'react-icons/md'
+import { FaUserTie, FaChalkboardTeacher } from 'react-icons/fa'
 
 export default function AdminDashboard(){
   const [candidates,setCandidates]=useState([])
   const [form,setForm]=useState({})
   const [editingId,setEditingId]=useState(null)
+  const [activeTab, setActiveTab] = useState('dashboard')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const r = useRouter()
 
   function formatDateDMY(iso){
@@ -102,63 +125,223 @@ export default function AdminDashboard(){
   }
 
   return (
-    <div className="centered">
-      <h2>Admin Dashboard</h2>
-      <button onClick={logout}>Logout</button>
-      <h3>Add Candidate</h3>
-      <form onSubmit={add}>
-        <input placeholder="name" value={form.name||''} onChange={e=>setForm({...form,name:e.target.value})} />
-        <input placeholder="position" value={form.position||''} onChange={e=>setForm({...form,position:e.target.value})} />
-        <input placeholder="department" value={form.department||''} onChange={e=>setForm({...form,department:e.target.value})} />
-        
-        {/* changed input name to match DB */}
-        <input placeholder="Training tenure (days)" value={form.tenure_of_training||''} onChange={e=>setForm({...form,tenure_of_training:e.target.value})} />
-        
-        {/* new input for training task */}
-        <input placeholder="Training task" value={form.training_task_name||''} onChange={e=>setForm({...form,training_task_name:e.target.value})} />
-        <input placeholder="Trainer Name" value={form.trainer_name||''} onChange={e=>setForm({...form,trainer_name:e.target.value})} />
-        <input type="date" placeholder="date_of_interview" value={form.date_picker||''} onChange={e=>{ const iso=e.target.value; setForm({...form,date_picker:iso,date_of_interview: iso? formatDateDMY(iso): ''}) }} />
-        <input placeholder="mobile_number" value={form.mobile_number||''} onChange={e=>setForm({...form,mobile_number:e.target.value})} />
-        <input placeholder="username" value={form.username||''} onChange={e=>setForm({...form,username:e.target.value})} />
-        <input placeholder="password" value={form.password||''} onChange={e=>setForm({...form,password:e.target.value})} />
-        <input placeholder="Father's name" value={form.father_name||''} onChange={e=>setForm({...form,father_name:e.target.value})} />
-        <input placeholder="Email" value={form.email||''} onChange={e=>setForm({...form,email:e.target.value})} />
-        <input placeholder="Address" value={form.address||''} onChange={e=>setForm({...form,address:e.target.value})} />
-        <input placeholder="Qualification" value={form.qualification||''} onChange={e=>setForm({...form,qualification:e.target.value})} />
-        <input type="date" placeholder="date_of_training" value={form.date_of_training||''} onChange={e=>setForm({...form,date_of_training:e.target.value})} />
-        <input placeholder="Training Location" value={form.training_location||''} onChange={e=>setForm({...form,training_location:e.target.value})} />
-        <input placeholder="Training Period" value={form.training_period||''} onChange={e=>setForm({...form,training_period:e.target.value})} />
-        <input placeholder="Trainer Email" value={form.trainer_email||''} onChange={e=>setForm({...form,trainer_email:e.target.value})} />
-        <input placeholder="Trainer Mobile" value={form.trainer_mobile||''} onChange={e=>setForm({...form,trainer_mobile:e.target.value})} />
-        <div style={{display:'flex',gap:8}}>
-          <button type="submit">{editingId? 'Save' : 'Add'}</button>
-          {editingId && <button type="button" onClick={()=>{ setEditingId(null); setForm({}) }}>Cancel</button>}
+    <div className="dashboard-layout">
+      {/* Left Sidebar */}
+      <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-header">
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? <MdMenu size={20} /> : <MdClose size={20} />}
+          </button>
+          
+          {!sidebarCollapsed && (
+            <>
+              <h2>Training Portal</h2>
+              <div className="admin-info">
+                <div className="admin-avatar">
+                  <FaUserTie size={20} />
+                </div>
+                <div className="admin-details">
+                  <h4>Admin User</h4>
+                  <p className="admin-role">Administrator</p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      </form>
+        
+        <nav className="sidebar-nav">
+          <button 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+            title="Dashboard"
+          >
+            <MdDashboard className="nav-icon" size={20} />
+            {!sidebarCollapsed && 'Dashboard'}
+          </button>
+          
+          <button 
+            className="nav-item logout-btn"
+            onClick={logout}
+            title="Logout"
+          >
+            <MdLogout className="nav-icon" size={20} />
+            {!sidebarCollapsed && 'Logout'}
+          </button>
+        </nav>
+      </div>
 
-      <h3>Candidates</h3>
-      <table border="1" cellPadding="6">
-        <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Dept</th><th>Training Tenure</th><th>Training Task</th><th>Trainer Name</th><th>Mobile</th><th>Actions</th></tr></thead>
-        <tbody>
-          {candidates.map(c=> (
-            <tr key={c.id}>
-              <td>{c.id}</td>
-              <td>{c.name}</td>
-              <td>{c.position}</td>
-              <td>{c.department}</td>
-              <td>{c.tenure_of_training}</td>
-              <td>{c.training_task_name}</td>
-              <td>{c.trainer_name}</td>
-              <td>{c.mobile_number}</td>
-              <td>
-                <button onClick={()=>startEdit(c)}>Edit</button>
-                <button onClick={()=>del(c.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    
+      {/* Main Content Area */}
+      <div className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        {activeTab === 'dashboard' && (
+          <div className="dashboard-content">
+            <div className="content-header">
+              <h1>Candidate Management</h1>
+              <p>Manage training candidates and their information</p>
+            </div>
+
+            <div className="form-section">
+              <h3>{editingId ? 'Edit Candidate' : 'Add New Candidate'}</h3>
+              <form onSubmit={add} className="candidate-form">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label><MdPerson className="label-icon" /> Name</label>
+                    <input placeholder="Enter full name" value={form.name||''} onChange={e=>setForm({...form,name:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdWork className="label-icon" /> Position</label>
+                    <input placeholder="Enter position" value={form.position||''} onChange={e=>setForm({...form,position:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdBusiness className="label-icon" /> Department</label>
+                    <input placeholder="Enter department" value={form.department||''} onChange={e=>setForm({...form,department:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdCalendarToday className="label-icon" /> Training Tenure (days)</label>
+                    <input placeholder="Enter training tenure" value={form.tenure_of_training||''} onChange={e=>setForm({...form,tenure_of_training:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdAssignment className="label-icon" /> Training Task</label>
+                    <input placeholder="Enter training task" value={form.training_task_name||''} onChange={e=>setForm({...form,training_task_name:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><FaChalkboardTeacher className="label-icon" /> Trainer Name</label>
+                    <input placeholder="Enter trainer name" value={form.trainer_name||''} onChange={e=>setForm({...form,trainer_name:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdCalendarToday className="label-icon" /> Interview Date</label>
+                    <input type="date" value={form.date_picker||''} onChange={e=>{ const iso=e.target.value; setForm({...form,date_picker:iso,date_of_interview: iso? formatDateDMY(iso): ''}) }} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdPhone className="label-icon" /> Mobile Number</label>
+                    <input placeholder="Enter mobile number" value={form.mobile_number||''} onChange={e=>setForm({...form,mobile_number:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdPerson className="label-icon" /> Username</label>
+                    <input placeholder="Enter username" value={form.username||''} onChange={e=>setForm({...form,username:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdPerson className="label-icon" /> Password</label>
+                    <input type="password" placeholder="Enter password" value={form.password||''} onChange={e=>setForm({...form,password:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdPerson className="label-icon" /> Father's Name</label>
+                    <input placeholder="Enter father's name" value={form.father_name||''} onChange={e=>setForm({...form,father_name:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdEmail className="label-icon" /> Email</label>
+                    <input type="email" placeholder="Enter email" value={form.email||''} onChange={e=>setForm({...form,email:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group form-group-full">
+                    <label><MdLocationOn className="label-icon" /> Address</label>
+                    <input placeholder="Enter address" value={form.address||''} onChange={e=>setForm({...form,address:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdSchool className="label-icon" /> Qualification</label>
+                    <input placeholder="Enter qualification" value={form.qualification||''} onChange={e=>setForm({...form,qualification:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdCalendarToday className="label-icon" /> Training Date</label>
+                    <input type="date" value={form.date_of_training||''} onChange={e=>setForm({...form,date_of_training:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdLocationOn className="label-icon" /> Training Location</label>
+                    <input placeholder="Enter training location" value={form.training_location||''} onChange={e=>setForm({...form,training_location:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdCalendarToday className="label-icon" /> Training Period</label>
+                    <input placeholder="Enter training period" value={form.training_period||''} onChange={e=>setForm({...form,training_period:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdEmail className="label-icon" /> Trainer Email</label>
+                    <input type="email" placeholder="Enter trainer email" value={form.trainer_email||''} onChange={e=>setForm({...form,trainer_email:e.target.value})} />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdPhone className="label-icon" /> Trainer Mobile</label>
+                    <input placeholder="Enter trainer mobile" value={form.trainer_mobile||''} onChange={e=>setForm({...form,trainer_mobile:e.target.value})} />
+                  </div>
+                </div>
+                
+                <div className="form-actions">
+                  <button type="submit" className="btn-primary">
+                    {editingId ? <><MdSave /> Update Candidate</> : <><MdAdd /> Add Candidate</>}
+                  </button>
+                  {editingId && (
+                    <button type="button" className="btn-secondary" onClick={()=>{ setEditingId(null); setForm({}) }}>
+                      <MdCancel /> Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            <div className="table-section">
+              <h3>Candidates List</h3>
+              <div className="table-container">
+                <table className="candidates-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Position</th>
+                      <th>Department</th>
+                      <th>Training Tenure</th>
+                      <th>Training Task</th>
+                      <th>Trainer Name</th>
+                      <th>Mobile</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {candidates.map(c=> (
+                      <tr key={c.id}>
+                        <td>{c.id}</td>
+                        <td>{c.name}</td>
+                        <td>{c.position}</td>
+                        <td>{c.department}</td>
+                        <td>{c.tenure_of_training}</td>
+                        <td>{c.training_task_name}</td>
+                        <td>{c.trainer_name}</td>
+                        <td>{c.mobile_number}</td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn-edit" onClick={()=>startEdit(c)}>
+                              <MdEdit /> Edit
+                            </button>
+                            <button className="btn-delete" onClick={()=>del(c.id)}>
+                              <MdDelete /> Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

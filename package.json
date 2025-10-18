@@ -8,12 +8,13 @@
     "start": "next start"
   },
   "dependencies": {
+    "bcryptjs": "latest",
+    "cookie": "latest",
+    "jsonwebtoken": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "sqlite3": "latest",
-    "bcryptjs": "latest",
-    "jsonwebtoken": "latest",
-    "cookie": "latest"
+    "react-icons": "^5.5.0",
+    "sqlite3": "latest"
   }
 }
