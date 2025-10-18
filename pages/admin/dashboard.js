@@ -27,18 +27,29 @@ export default function AdminDashboard(){
   }
 
   function startEdit(c){
-    // populate form with candidate data and set editing id
     setForm({
       name: c.name || '',
       position: c.position || '',
       department: c.department || '',
-      days_of_training: c.days_of_training || '',
+      // changed to DB column name
+      tenure_of_training: c.tenure_of_training || '',
+      // use DB field training_task_name
+      training_task_name: c.training_task_name || '',
       trainer_name: c.trainer_name || '',
       date_of_interview: c.date_of_interview || '',
       date_picker: c.date_of_interview ? parseDateDMY(c.date_of_interview) : '',
       mobile_number: c.mobile_number || '',
       username: c.username || '',
-      password: ''
+      password: '',
+      father_name: c.father_name || '',
+      email: c.email || '',
+      address: c.address || '',
+      qualification: c.qualification || '',
+      date_of_training: c.date_of_training || '',
+      training_location: c.training_location || '',
+      training_period: c.training_period || '',
+      trainer_email: c.trainer_email || '',
+      trainer_mobile: c.trainer_mobile || ''
     })
     setEditingId(c.id)
     // scroll to top of form
@@ -99,12 +110,26 @@ export default function AdminDashboard(){
         <input placeholder="name" value={form.name||''} onChange={e=>setForm({...form,name:e.target.value})} />
         <input placeholder="position" value={form.position||''} onChange={e=>setForm({...form,position:e.target.value})} />
         <input placeholder="department" value={form.department||''} onChange={e=>setForm({...form,department:e.target.value})} />
-        <input placeholder="Days of Training" value={form.days_of_training||''} onChange={e=>setForm({...form,days_of_training:e.target.value})} />
+        
+        {/* changed input name to match DB */}
+        <input placeholder="Training tenure (days)" value={form.tenure_of_training||''} onChange={e=>setForm({...form,tenure_of_training:e.target.value})} />
+        
+        {/* new input for training task */}
+        <input placeholder="Training task" value={form.training_task_name||''} onChange={e=>setForm({...form,training_task_name:e.target.value})} />
         <input placeholder="Trainer Name" value={form.trainer_name||''} onChange={e=>setForm({...form,trainer_name:e.target.value})} />
         <input type="date" placeholder="date_of_interview" value={form.date_picker||''} onChange={e=>{ const iso=e.target.value; setForm({...form,date_picker:iso,date_of_interview: iso? formatDateDMY(iso): ''}) }} />
         <input placeholder="mobile_number" value={form.mobile_number||''} onChange={e=>setForm({...form,mobile_number:e.target.value})} />
         <input placeholder="username" value={form.username||''} onChange={e=>setForm({...form,username:e.target.value})} />
         <input placeholder="password" value={form.password||''} onChange={e=>setForm({...form,password:e.target.value})} />
+        <input placeholder="Father's name" value={form.father_name||''} onChange={e=>setForm({...form,father_name:e.target.value})} />
+        <input placeholder="Email" value={form.email||''} onChange={e=>setForm({...form,email:e.target.value})} />
+        <input placeholder="Address" value={form.address||''} onChange={e=>setForm({...form,address:e.target.value})} />
+        <input placeholder="Qualification" value={form.qualification||''} onChange={e=>setForm({...form,qualification:e.target.value})} />
+        <input type="date" placeholder="date_of_training" value={form.date_of_training||''} onChange={e=>setForm({...form,date_of_training:e.target.value})} />
+        <input placeholder="Training Location" value={form.training_location||''} onChange={e=>setForm({...form,training_location:e.target.value})} />
+        <input placeholder="Training Period" value={form.training_period||''} onChange={e=>setForm({...form,training_period:e.target.value})} />
+        <input placeholder="Trainer Email" value={form.trainer_email||''} onChange={e=>setForm({...form,trainer_email:e.target.value})} />
+        <input placeholder="Trainer Mobile" value={form.trainer_mobile||''} onChange={e=>setForm({...form,trainer_mobile:e.target.value})} />
         <div style={{display:'flex',gap:8}}>
           <button type="submit">{editingId? 'Save' : 'Add'}</button>
           {editingId && <button type="button" onClick={()=>{ setEditingId(null); setForm({}) }}>Cancel</button>}
@@ -113,7 +138,7 @@ export default function AdminDashboard(){
 
       <h3>Candidates</h3>
       <table border="1" cellPadding="6">
-        <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Dept</th><th>Days of Training</th><th>Trainer Name</th><th>Mobile</th><th>Actions</th></tr></thead>
+        <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Dept</th><th>Training Tenure</th><th>Training Task</th><th>Trainer Name</th><th>Mobile</th><th>Actions</th></tr></thead>
         <tbody>
           {candidates.map(c=> (
             <tr key={c.id}>
@@ -121,7 +146,8 @@ export default function AdminDashboard(){
               <td>{c.name}</td>
               <td>{c.position}</td>
               <td>{c.department}</td>
-              <td>{c.days_of_training}</td>
+              <td>{c.tenure_of_training}</td>
+              <td>{c.training_task_name}</td>
               <td>{c.trainer_name}</td>
               <td>{c.mobile_number}</td>
               <td>

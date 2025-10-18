@@ -13,15 +13,17 @@ export default function handler(req, res) {
   if (req.method === 'GET') {
     // admin can get any, candidate only own
     if (user.role === 'candidate' && user.id != id) return res.status(403).json({ error: 'forbidden' })
-    db.get('SELECT id,name,position,department,date_of_interview,tenure_of_training,training_task_name,mobile_number,trainer_name,username FROM candidates WHERE id = ?', [id], (err, row) => {
+    db.get('SELECT id,name,position,department,date_of_interview,tenure_of_training,training_task_name,mobile_number,trainer_name,username,father_name,email,address,qualification,date_of_training,training_location,training_period,trainer_email,trainer_mobile FROM candidates WHERE id = ?', [id], (err, row) => {
       if (err) return res.status(500).json({ error: 'db' })
       res.json(row)
     })
   } else if (req.method === 'PUT') {
     if (user.role !== 'admin') return res.status(403).json({ error: 'forbidden' })
-    const { name, position, department, date_of_interview, tenure_of_training, training_task_name, mobile_number, trainer_name, username, password } = req.body
-    const params = [name,position,department,date_of_interview,tenure_of_training,training_task_name,mobile_number,trainer_name,username]
-    let sql = 'UPDATE candidates SET name=?,position=?,department=?,date_of_interview=?,tenure_of_training=?,training_task_name=?,mobile_number=?,trainer_name=?,username=?'
+    const { name, position, department, date_of_interview, tenure_of_training, training_task_name, mobile_number, trainer_name, username, password,
+      father_name, email, address, qualification, date_of_training, training_location, training_period, trainer_email, trainer_mobile } = req.body
+    // build update query to set additional fields as well
+    let sql = 'UPDATE candidates SET name=?,position=?,department=?,date_of_interview=?,tenure_of_training=?,training_task_name=?,mobile_number=?,trainer_name=?,username=?,father_name=?,email=?,address=?,qualification=?,date_of_training=?,training_location=?,training_period=?,trainer_email=?,trainer_mobile=?'
+    const params = [name,position,department,date_of_interview,tenure_of_training,training_task_name,mobile_number,trainer_name,username,father_name,email,address,qualification,date_of_training,training_location,training_period,trainer_email,trainer_mobile]
     if (password) {
       const hash = bcrypt.hashSync(password, 10)
       sql += ', password=?'

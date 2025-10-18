@@ -28,6 +28,15 @@ export default function CandidateDashboard(){
         <p><strong>Training task:</strong> {data.training_task_name}</p>
         <p><strong>Trainer:</strong> {data.trainer_name}</p>
         <p><strong>Mobile:</strong> {data.mobile_number}</p>
+        <p><strong>Father:</strong> {data.father_name}</p>
+        <p><strong>Email:</strong> {data.email}</p>
+        <p><strong>Address:</strong> {data.address}</p>
+        <p><strong>Qualification:</strong> {data.qualification}</p>
+        <p><strong>Date of Training:</strong> {data.date_of_training}</p>
+        <p><strong>Training Location:</strong> {data.training_location}</p>
+        <p><strong>Training Period:</strong> {data.training_period}</p>
+        <p><strong>Trainer Email:</strong> {data.trainer_email}</p>
+        <p><strong>Trainer Mobile:</strong> {data.trainer_mobile}</p>
       </div>
     </div>
   )
