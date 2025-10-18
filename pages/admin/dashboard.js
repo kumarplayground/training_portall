@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
+import React from 'react'
 import { 
   MdDashboard, 
   MdLogout, 
@@ -17,8 +18,11 @@ import {
   MdWork,
   MdCalendarToday,
   MdAssignment,
-  MdMenu,
-  MdClose
+  MdCheckCircle,
+  MdCancel as MdCancelIcon,
+  MdAccessTime,
+  MdEventNote,
+  MdFactCheck
 } from 'react-icons/md'
 import { FaUserTie, FaChalkboardTeacher } from 'react-icons/fa'
 
@@ -27,7 +31,20 @@ export default function AdminDashboard(){
   const [form,setForm]=useState({})
   const [editingId,setEditingId]=useState(null)
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [attendances, setAttendances] = useState([])
+  const [attendanceForm, setAttendanceForm] = useState({
+    candidate_id: '',
+    date: new Date().toISOString().split('T')[0],
+    status: 'present',
+    note: ''
+  })
+  const [attendanceView, setAttendanceView] = useState('all') // 'all' or 'candidate'
+  const [selectedCandidateId, setSelectedCandidateId] = useState('')
+  const [dateFilter, setDateFilter] = useState({
+    startDate: '',
+    endDate: ''
+  })
+  const [filteredAttendances, setFilteredAttendances] = useState([])
   const r = useRouter()
 
   function formatDateDMY(iso){
@@ -88,7 +105,10 @@ export default function AdminDashboard(){
     else setCandidates([])
   }
 
-  useEffect(()=>{ load() }, [])
+  useEffect(()=>{ 
+    load() 
+    loadAttendances()
+  }, [])
 
   async function add(e){
     e.preventDefault()
@@ -124,57 +144,155 @@ export default function AdminDashboard(){
     r.push('/')
   }
 
+  // Attendance Functions
+  async function loadAttendances(){
+    try {
+      const res = await fetch('/api/attendances')
+      if (!res.ok) return
+      const data = await res.json()
+      setAttendances(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to load attendances:', error)
+      setAttendances([])
+    }
+  }
+
+  async function markAttendance(e){
+    e.preventDefault()
+    try {
+      const res = await fetch('/api/attendances', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(attendanceForm)
+      })
+      if (res.ok) {
+        setAttendanceForm({
+          candidate_id: '',
+          date: new Date().toISOString().split('T')[0],
+          status: 'present',
+          note: ''
+        })
+        loadAttendances()
+      }
+    } catch (error) {
+      console.error('Failed to mark attendance:', error)
+    }
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-GB')
+  }
+
+  function getStatusIcon(status) {
+    switch (status) {
+      case 'present': return <MdCheckCircle style={{color: '#10b981'}} />
+      case 'absent': return <MdCancelIcon style={{color: '#ef4444'}} />
+      case 'late': return <MdAccessTime style={{color: '#f59e0b'}} />
+      default: return <MdEventNote />
+    }
+  }
+
+  function getStatusColor(status) {
+    switch (status) {
+      case 'present': return '#10b981'
+      case 'absent': return '#ef4444'
+      case 'late': return '#f59e0b'
+      default: return '#6b7280'
+    }
+  }
+
+  // Filter attendances based on selected candidate and date range
+  function filterAttendances() {
+    let filtered = [...attendances]
+    
+    // Filter by candidate if view is set to 'candidate' and a candidate is selected
+    if (attendanceView === 'candidate' && selectedCandidateId) {
+      filtered = filtered.filter(att => att.candidate_id == selectedCandidateId)
+    }
+    
+    // Filter by date range if provided
+    if (dateFilter.startDate) {
+      filtered = filtered.filter(att => att.date >= dateFilter.startDate)
+    }
+    if (dateFilter.endDate) {
+      filtered = filtered.filter(att => att.date <= dateFilter.endDate)
+    }
+    
+    setFilteredAttendances(filtered)
+  }
+
+  // Update filtered attendances whenever filters change
+  React.useEffect(() => {
+    filterAttendances()
+  }, [attendances, attendanceView, selectedCandidateId, dateFilter])
+
+  function resetFilters() {
+    setAttendanceView('all')
+    setSelectedCandidateId('')
+    setDateFilter({ startDate: '', endDate: '' })
+  }
+
+  function getAttendanceStats(candidateId = null) {
+    const relevantAttendances = candidateId 
+      ? attendances.filter(att => att.candidate_id == candidateId)
+      : attendances
+    
+    const total = relevantAttendances.length
+    const present = relevantAttendances.filter(att => att.status === 'present').length
+    const absent = relevantAttendances.filter(att => att.status === 'absent').length
+    const late = relevantAttendances.filter(att => att.status === 'late').length
+    
+    return { total, present, absent, late }
+  }
+
   return (
     <div className="dashboard-layout">
       {/* Left Sidebar */}
-      <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <div className="sidebar">
         <div className="sidebar-header">
-          <button 
-            className="sidebar-toggle"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? <MdMenu size={20} /> : <MdClose size={20} />}
-          </button>
-          
-          {!sidebarCollapsed && (
-            <>
-              <h2>Training Portal</h2>
-              <div className="admin-info">
-                <div className="admin-avatar">
-                  <FaUserTie size={20} />
-                </div>
-                <div className="admin-details">
-                  <h4>Admin User</h4>
-                  <p className="admin-role">Administrator</p>
-                </div>
-              </div>
-            </>
-          )}
+          <h2>Training Portal</h2>
+          <div className="admin-info">
+            <div className="admin-avatar">
+              <FaUserTie size={20} />
+            </div>
+            <div className="admin-details">
+              <h4>Admin User</h4>
+              <p className="admin-role">Administrator</p>
+            </div>
+          </div>
         </div>
         
         <nav className="sidebar-nav">
           <button 
             className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
-            title="Dashboard"
           >
             <MdDashboard className="nav-icon" size={20} />
-            {!sidebarCollapsed && 'Dashboard'}
+            Dashboard
+          </button>
+          
+          <button 
+            className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+            onClick={() => setActiveTab('attendance')}
+          >
+            <MdFactCheck className="nav-icon" size={20} />
+            Attendance
           </button>
           
           <button 
             className="nav-item logout-btn"
             onClick={logout}
-            title="Logout"
           >
             <MdLogout className="nav-icon" size={20} />
-            {!sidebarCollapsed && 'Logout'}
+            Logout
           </button>
         </nav>
       </div>
 
       {/* Main Content Area */}
-      <div className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <div className="main-content">
         {activeTab === 'dashboard' && (
           <div className="dashboard-content">
             <div className="content-header">
@@ -335,6 +453,228 @@ export default function AdminDashboard(){
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div className="attendance-content">
+            <div className="content-header">
+              <h1>Daily Attendance Management</h1>
+              <p>Mark and manage daily attendance for training candidates</p>
+            </div>
+
+            {/* Mark Attendance Form */}
+            <div className="form-section">
+              <h3>Mark Attendance</h3>
+              <form onSubmit={markAttendance} className="attendance-form">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label><MdPerson className="label-icon" /> Select Candidate</label>
+                    <select 
+                      value={attendanceForm.candidate_id} 
+                      onChange={e=>setAttendanceForm({...attendanceForm, candidate_id: e.target.value})}
+                      required
+                    >
+                      <option value="">Choose a candidate...</option>
+                      {candidates.map(c => (
+                        <option key={c.id} value={c.id}>{c.name} - {c.position}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdCalendarToday className="label-icon" /> Date</label>
+                    <input 
+                      type="date" 
+                      value={attendanceForm.date} 
+                      onChange={e=>setAttendanceForm({...attendanceForm, date: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label><MdCheckCircle className="label-icon" /> Status</label>
+                    <select 
+                      value={attendanceForm.status} 
+                      onChange={e=>setAttendanceForm({...attendanceForm, status: e.target.value})}
+                      required
+                    >
+                      <option value="present">Present</option>
+                      <option value="absent">Absent</option>
+                      <option value="late">Late</option>
+                    </select>
+                  </div>
+                  
+                  <div className="form-group form-group-full">
+                    <label><MdEventNote className="label-icon" /> Note (Optional)</label>
+                    <input 
+                      type="text"
+                      placeholder="Add any notes about attendance..."
+                      value={attendanceForm.note} 
+                      onChange={e=>setAttendanceForm({...attendanceForm, note: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-actions">
+                  <button type="submit" className="btn-primary">
+                    <MdAdd /> Mark Attendance
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Attendance Records */}
+            <div className="table-section">
+              <div className="attendance-header">
+                <h3>Attendance Records</h3>
+                <div className="attendance-controls">
+                  <div className="view-toggle">
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="attendanceView" 
+                        value="all" 
+                        checked={attendanceView === 'all'}
+                        onChange={e => setAttendanceView(e.target.value)}
+                      />
+                      All Candidates
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="attendanceView" 
+                        value="candidate" 
+                        checked={attendanceView === 'candidate'}
+                        onChange={e => setAttendanceView(e.target.value)}
+                      />
+                      Individual Candidate
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filters Section */}
+              <div className="filters-section">
+                <div className="filter-row">
+                  {attendanceView === 'candidate' && (
+                    <div className="filter-group">
+                      <label><MdPerson className="label-icon" /> Select Candidate</label>
+                      <select 
+                        value={selectedCandidateId} 
+                        onChange={e => setSelectedCandidateId(e.target.value)}
+                      >
+                        <option value="">All Candidates</option>
+                        {candidates.map(c => (
+                          <option key={c.id} value={c.id}>{c.name} - {c.position}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  <div className="filter-group">
+                    <label><MdCalendarToday className="label-icon" /> Start Date</label>
+                    <input 
+                      type="date" 
+                      value={dateFilter.startDate}
+                      onChange={e => setDateFilter({...dateFilter, startDate: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="filter-group">
+                    <label><MdCalendarToday className="label-icon" /> End Date</label>
+                    <input 
+                      type="date" 
+                      value={dateFilter.endDate}
+                      onChange={e => setDateFilter({...dateFilter, endDate: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="filter-actions">
+                    <button type="button" className="btn-secondary" onClick={resetFilters}>
+                      <MdCancel /> Reset Filters
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Statistics */}
+              {attendanceView === 'candidate' && selectedCandidateId && (
+                <div className="attendance-stats">
+                  <h4>Attendance Summary for {candidates.find(c => c.id == selectedCandidateId)?.name}</h4>
+                  <div className="stats-grid">
+                    {(() => {
+                      const stats = getAttendanceStats(selectedCandidateId)
+                      return (
+                        <>
+                          <div className="stat-card total">
+                            <div className="stat-number">{stats.total}</div>
+                            <div className="stat-label">Total Days</div>
+                          </div>
+                          <div className="stat-card present">
+                            <div className="stat-number">{stats.present}</div>
+                            <div className="stat-label">Present</div>
+                          </div>
+                          <div className="stat-card absent">
+                            <div className="stat-number">{stats.absent}</div>
+                            <div className="stat-label">Absent</div>
+                          </div>
+                          <div className="stat-card late">
+                            <div className="stat-number">{stats.late}</div>
+                            <div className="stat-label">Late</div>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              <div className="table-container">
+                <table className="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      {attendanceView === 'all' && <th>Candidate</th>}
+                      <th>Status</th>
+                      <th>Note</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAttendances.length > 0 ? filteredAttendances.map(att => (
+                      <tr key={att.id}>
+                        <td>{formatDate(att.date)}</td>
+                        {attendanceView === 'all' && <td>{att.name || 'Unknown'}</td>}
+                        <td>
+                          <span className="status-badge" style={{backgroundColor: getStatusColor(att.status)}}>
+                            {getStatusIcon(att.status)}
+                            {att.status.charAt(0).toUpperCase() + att.status.slice(1)}
+                          </span>
+                        </td>
+                        <td>{att.note || '-'}</td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn-edit" onClick={()=>console.log('Edit attendance:', att.id)}>
+                              <MdEdit /> Edit
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td colSpan={attendanceView === 'all' ? "5" : "4"} style={{textAlign: 'center', padding: '20px', color: '#6b7280'}}>
+                          {attendanceView === 'candidate' && !selectedCandidateId 
+                            ? 'Please select a candidate to view their attendance'
+                            : 'No attendance records found for the selected criteria'
+                          }
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
