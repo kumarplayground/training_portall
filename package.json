@@ -12,9 +12,9 @@
     "cookie": "latest",
     "jsonwebtoken": "latest",
     "next": "latest",
+    "pg": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "react-icons": "^5.5.0",
-    "sqlite3": "latest"
+    "react-icons": "^5.5.0"
   }
 }

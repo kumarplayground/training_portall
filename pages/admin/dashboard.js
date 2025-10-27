@@ -159,13 +159,32 @@ export default function AdminDashboard(){
 
   async function markAttendance(e){
     e.preventDefault()
+    console.log('📝 Marking attendance with data:', attendanceForm)
+    
+    // Validate required fields
+    if (!attendanceForm.candidate_id) {
+      alert('Please select a candidate')
+      return
+    }
+    if (!attendanceForm.date) {
+      alert('Please select a date')
+      return
+    }
+    
     try {
+      console.log('🔄 Sending request to /api/attendances...')
       const res = await fetch('/api/attendances', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(attendanceForm)
       })
+      
+      console.log('📡 Response status:', res.status)
+      console.log('📡 Response ok:', res.ok)
+      
       if (res.ok) {
+        const responseData = await res.json()
+        console.log('✅ Attendance marked successfully:', responseData)
         setAttendanceForm({
           candidate_id: '',
           date: new Date().toISOString().split('T')[0],
@@ -173,9 +192,14 @@ export default function AdminDashboard(){
           note: ''
         })
         loadAttendances()
+      } else {
+        const errorData = await res.json()
+        console.error('❌ Failed to mark attendance:', errorData)
+        alert(`Failed to mark attendance: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
-      console.error('Failed to mark attendance:', error)
+      console.error('❌ Network error when marking attendance:', error)
+      alert('Network error: Please check if the server is running')
     }
   }
 

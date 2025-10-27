@@ -6,3 +6,7 @@ hrportal.db
 .env
 /.env.local
 .vscode/
+
+# Test and verification scripts
+test-attendance.js
+verify-database.js
